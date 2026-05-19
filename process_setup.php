@@ -76,12 +76,15 @@ if (!empty($_POST['admin_login']) && $_POST['admin_login'] !== 'admin') {
     }
 }
 
-// Si des erreurs, retourner à la page de configuration
+// Si des erreurs de validation, les afficher directement
 if (!empty($errors)) {
-    $_SESSION['setup_errors'] = $errors;
-    $_SESSION['setup_data'] = $_POST;
-    redirect(BASE_URL . 'setup.php');
-    exit;
+    $list = implode('</li><li>', array_map('htmlspecialchars', $errors));
+    die("<div style='background:#f8d7da;color:#721c24;padding:30px;font-family:monospace;font-size:16px;'>
+        <h2>Erreurs de validation</h2>
+        <ul><li>{$list}</li></ul>
+        <p><strong>POST reçu :</strong><br>" . htmlspecialchars(print_r(array_map(fn($v) => substr((string)$v,0,50), array_diff_key($_POST, ['admin_password'=>1,'admin_password_confirm'=>1])), true)) . "</p>
+        <br><a href='setup.php' style='color:#721c24'>← Retour au setup</a>
+    </div>");
 }
 
 // ============================================================================
@@ -304,19 +307,23 @@ try {
 } catch (Exception $e) {
     // En cas d'erreur, annuler toutes les modifications
     db_rollback();
-    
+
     // Supprimer le logo uploadé si existant
     if ($logo_filename && file_exists(LOGO_PATH . $logo_filename)) {
         unlink(LOGO_PATH . $logo_filename);
     }
-    
+
     // Log l'erreur
     error_log("Erreur configuration: " . $e->getMessage());
-    
-    // Retourner à la page de configuration avec l'erreur
-    $_SESSION['setup_errors'] = ['Une erreur est survenue lors de la configuration : ' . $e->getMessage()];
-    $_SESSION['setup_data'] = $_POST;
-    redirect(BASE_URL . 'setup.php');
+
+    // Afficher l'erreur directement (debug temporaire)
+    die("<div style='background:#f8d7da;color:#721c24;padding:30px;font-family:monospace;font-size:16px;'>
+        <h2>Erreur lors de la configuration</h2>
+        <p><strong>Message :</strong> " . htmlspecialchars($e->getMessage()) . "</p>
+        <p><strong>Fichier :</strong> " . htmlspecialchars($e->getFile()) . " ligne " . $e->getLine() . "</p>
+        <p><strong>POST reçu :</strong><br>" . htmlspecialchars(print_r(array_map(fn($v) => substr($v,0,50), array_diff_key($_POST, ['admin_password'=>1,'admin_password_confirm'=>1])), true)) . "</p>
+        <br><a href='setup.php' style='color:#721c24'>← Retour au setup</a>
+    </div>");
 }
 
 // ============================================================================
