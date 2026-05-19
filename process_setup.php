@@ -46,12 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $errors = [];
 
-// Champs obligatoires
+// Champs obligatoires (adresse/telephone optionnels, configurables plus tard dans Paramètres)
 $required_fields = [
     'nom_boutique' => 'Le nom de la boutique est obligatoire',
-    'adresse' => 'L\'adresse est obligatoire',
-    'telephone' => 'Le téléphone est obligatoire',
-    'devise' => 'La devise est obligatoire',
     'admin_nom' => 'Le nom de l\'administrateur est obligatoire',
     'admin_login' => 'L\'identifiant administrateur est obligatoire',
     'admin_password' => 'Le mot de passe administrateur est obligatoire'

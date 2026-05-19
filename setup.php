@@ -192,14 +192,14 @@ if (is_system_configured()) {
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label required">Adresse complète</label>
-                                    <textarea class="form-control" name="adresse" rows="2" required placeholder="Avenue, numéro, quartier, ville"></textarea>
+                                    <label class="form-label">Adresse complète</label>
+                                    <textarea class="form-control" name="adresse" rows="2" placeholder="Avenue, numéro, quartier, ville"></textarea>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label required">Téléphone</label>
-                                        <input type="text" class="form-control" name="telephone" required placeholder="+226 XXX XXX XXX">
+                                        <label class="form-label">Téléphone</label>
+                                        <input type="text" class="form-control" name="telephone" placeholder="+226 XXX XXX XXX">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Email</label>
