@@ -149,7 +149,7 @@ if (is_system_configured()) {
 
                 <div class="card">
                     <div class="card-body">
-                        <form id="setupForm" method="POST" action="process_setup.php" enctype="multipart/form-data">
+                        <form id="setupForm" method="POST" action="process_setup.php" enctype="multipart/form-data" novalidate>
                             
                             <!-- ÉTAPE 1: Informations de base -->
                             <div class="setup-step" id="setupStep1">
@@ -402,6 +402,7 @@ if (is_system_configured()) {
         </div>
     </div>
 
+    <script src="./assets/js/tabler.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script>
         let cropper = null;
@@ -530,43 +531,48 @@ if (is_system_configured()) {
             document.getElementById(inputId + '_text').value = color;
         }
 
-        // Validation du formulaire
+        // Validation manuelle du formulaire (novalidate désactive la validation native)
         document.getElementById('setupForm').addEventListener('submit', function(e) {
-            console.log('Formulaire soumis !');
-            
+            e.preventDefault();
+
+            const adminNom = document.querySelector('[name="admin_nom"]').value.trim();
+            const adminLogin = document.querySelector('[name="admin_login"]').value.trim();
             const password = document.getElementById('admin_password').value;
             const passwordConfirm = document.getElementById('admin_password_confirm').value;
-            
-            console.log('Password:', password);
-            console.log('Confirm:', passwordConfirm);
-            
+
+            if (!adminNom || !adminLogin || !password) {
+                alert('Veuillez remplir tous les champs obligatoires.');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('Le mot de passe doit contenir au moins 6 caractères.');
+                return;
+            }
+
             if (password !== passwordConfirm) {
-                e.preventDefault();
                 document.getElementById('passwordError').style.display = 'block';
                 alert('Les mots de passe ne correspondent pas !');
-                return false;
+                return;
             }
-            
-            // Masquer l'erreur si elle était affichée
+
             document.getElementById('passwordError').style.display = 'none';
-            
-            console.log('Validation OK - Soumission du formulaire...');
-            
-            // Désactiver le bouton pour éviter les doubles soumissions
+
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Configuration en cours...';
-            
-            // Le formulaire va se soumettre automatiquement
-            return true;
+
+            this.submit();
         });
 
         // Initialiser les tooltips Bootstrap
         document.addEventListener('DOMContentLoaded', function() {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
+            if (typeof bootstrap !== 'undefined') {
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
         });
     </script>
 </body>
