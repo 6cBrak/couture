@@ -37,7 +37,9 @@ define('ROOT_PATH', dirname(__DIR__));
 // URL de base du site — détectée automatiquement (local ou production)
 $_base_host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $_base_port = $_SERVER['SERVER_PORT'] ?? 80;
-$_base_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$_base_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    ? 'https'
+    : ((($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https') ? 'https' : 'http');
 $_base_script = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
 $_base_root = rtrim(preg_replace('#/(ajax|config|database|dist|tests)(/.*)?$#', '', $_base_script), '/');
 define('BASE_URL', $_base_scheme . '://' . $_base_host . $_base_root . '/');
