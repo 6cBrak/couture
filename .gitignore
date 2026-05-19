@@ -10,8 +10,7 @@ uploads/produits/*.jpeg
 uploads/utilisateurs/*.png
 uploads/utilisateurs/*.jpg
 
-# Dump SQL (contient des données sensibles)
-database/init.sql
+# database/init.sql  (inclus volontairement pour le déploiement)
 
 # Logs cron
 cron/*.log
