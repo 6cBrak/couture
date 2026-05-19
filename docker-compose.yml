@@ -19,6 +19,7 @@ services:
       - internal
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=web"
       - "traefik.http.routers.couture.rule=Host(`${APP_DOMAIN}`)"
       - "traefik.http.routers.couture.entrypoints=websecure"
       - "traefik.http.routers.couture.tls.certresolver=letsencrypt"
