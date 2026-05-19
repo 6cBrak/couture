@@ -1,0 +1,17 @@
+# Secrets — ne jamais committer
+.env
+
+# Images uploadées (gérées par volume Docker)
+uploads/logos/*.png
+uploads/logos/*.jpg
+uploads/produits/*.png
+uploads/produits/*.jpg
+uploads/produits/*.jpeg
+uploads/utilisateurs/*.png
+uploads/utilisateurs/*.jpg
+
+# Dump SQL (contient des données sensibles)
+database/init.sql
+
+# Logs cron
+cron/*.log

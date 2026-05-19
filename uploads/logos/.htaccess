@@ -1,0 +1,21 @@
+# Autoriser l'accès aux images uniquement
+<FilesMatch "\.(jpg|jpeg|png|gif|svg)$">
+    Allow from all
+</FilesMatch>
+
+# Interdire l'accès aux autres types de fichiers
+<FilesMatch "\.php$">
+    Deny from all
+</FilesMatch>
+
+# Interdire le listage du répertoire
+Options -Indexes
+
+# Activer le cache pour les images
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+</IfModule>

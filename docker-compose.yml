@@ -1,0 +1,54 @@
+services:
+
+  app:
+    build: .
+    container_name: couture_app
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    volumes:
+      - ./uploads:/var/www/html/uploads   # persistance des fichiers uploadés
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - web
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.couture.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.couture.entrypoints=websecure"
+      - "traefik.http.routers.couture.tls.certresolver=letsencrypt"
+      - "traefik.http.services.couture.loadbalancer.server.port=80"
+
+  db:
+    image: mariadb:10.11
+    container_name: couture_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro  # import initial
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASS}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+volumes:
+  db_data:
+
+networks:
+  web:
+    external: true   # réseau Traefik existant
+  internal:
+    driver: bridge

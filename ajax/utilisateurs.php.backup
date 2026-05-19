@@ -1,0 +1,144 @@
+<?php
+/**
+ * AJAX - GESTION DES UTILISATEURS
+ * Ajouter, modifier, supprimer des utilisateurs
+ */
+require_once '../protection_pages.php';
+header('Content-Type: application/json');
+
+// Vérifier que c'est un admin
+if (!$is_admin) {
+    echo json_encode(['success' => false, 'message' => 'Accès refusé']);
+    exit;
+}
+
+$action = $_POST['action'] ?? '';
+$response = ['success' => false, 'message' => ''];
+
+try {
+    switch ($action) {
+        case 'add_user':
+            $nom = trim($_POST['nom_utilisateur'] ?? '');
+            $login = trim($_POST['login'] ?? '');
+            $password = $_POST['password'] ?? '';
+            $email = trim($_POST['email'] ?? '');
+            $role = $_POST['role'] ?? 'vendeur';
+            
+            if (empty($nom) || empty($login) || empty($password)) {
+                throw new Exception('Nom, login et mot de passe sont obligatoires');
+            }
+            
+            // Vérifier si le login existe déjà
+            $existing = db_fetch_one("SELECT id_utilisateur FROM utilisateurs WHERE login = ?", [$login]);
+            if ($existing) {
+                throw new Exception('Ce login existe déjà');
+            }
+            
+            $password_hash = password_hash($password, PASSWORD_DEFAULT);
+            $niveau = ($role === 'admin') ? NIVEAU_ADMIN : NIVEAU_VENDEUR;
+            
+            $sql = "INSERT INTO utilisateurs (nom_utilisateur, login, password, email, role, niveau_acces, est_actif, date_creation) 
+                    VALUES (?, ?, ?, ?, ?, ?, 1, NOW())";
+            db_execute($sql, [$nom, $login, $password_hash, $email, $role, $niveau]);
+            
+            $response['success'] = true;
+            $response['message'] = 'Utilisateur ajouté avec succès';
+            break;
+            
+        case 'update_user':
+            $id_utilisateur = intval($_POST['id_utilisateur'] ?? 0);
+            $nom = trim($_POST['nom_utilisateur'] ?? '');
+            $login = trim($_POST['login'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $role = $_POST['role'] ?? 'vendeur';
+            $password = $_POST['password'] ?? '';
+            
+            if (!$id_utilisateur) {
+                throw new Exception('ID utilisateur manquant');
+            }
+            
+            if (empty($nom) || empty($login)) {
+                throw new Exception('Nom et login sont obligatoires');
+            }
+            
+            // Vérifier si le login existe déjà (sauf pour cet utilisateur)
+            $existing = db_fetch_one("SELECT id_utilisateur FROM utilisateurs WHERE login = ? AND id_utilisateur != ?", [$login, $id_utilisateur]);
+            if ($existing) {
+                throw new Exception('Ce login existe déjà');
+            }
+            
+            $niveau = ($role === 'admin') ? NIVEAU_ADMIN : NIVEAU_VENDEUR;
+            
+            if (!empty($password)) {
+                // Mise à jour avec nouveau mot de passe
+                $password_hash = password_hash($password, PASSWORD_DEFAULT);
+                $sql = "UPDATE utilisateurs SET nom_utilisateur = ?, login = ?, password = ?, email = ?, role = ?, niveau_acces = ? 
+                        WHERE id_utilisateur = ?";
+                db_execute($sql, [$nom, $login, $password_hash, $email, $role, $niveau, $id_utilisateur]);
+            } else {
+                // Mise à jour sans changer le mot de passe
+                $sql = "UPDATE utilisateurs SET nom_utilisateur = ?, login = ?, email = ?, role = ?, niveau_acces = ? 
+                        WHERE id_utilisateur = ?";
+                db_execute($sql, [$nom, $login, $email, $role, $niveau, $id_utilisateur]);
+            }
+            
+            $response['success'] = true;
+            $response['message'] = 'Utilisateur modifié avec succès';
+            break;
+            
+        case 'delete_user':
+            $id_utilisateur = intval($_POST['id_utilisateur'] ?? 0);
+            
+            if (!$id_utilisateur) {
+                throw new Exception('ID utilisateur manquant');
+            }
+            
+            // Empêcher la suppression de soi-même
+            if ($id_utilisateur == $user_id) {
+                throw new Exception('Vous ne pouvez pas supprimer votre propre compte');
+            }
+            
+            // Vérifier si l'utilisateur a des ventes
+            $ventes = db_fetch_one("SELECT COUNT(*) as nb FROM ventes WHERE id_vendeur = ?", [$id_utilisateur]);
+            
+            if ($ventes['nb'] > 0) {
+                // Désactiver au lieu de supprimer pour préserver l'historique
+                db_execute("UPDATE utilisateurs SET est_actif = 0 WHERE id_utilisateur = ?", [$id_utilisateur]);
+                $response['message'] = 'Utilisateur désactivé (a des ventes associées)';
+            } else {
+                // Supprimer réellement
+                db_execute("DELETE FROM utilisateurs WHERE id_utilisateur = ?", [$id_utilisateur]);
+                $response['message'] = 'Utilisateur supprimé avec succès';
+            }
+            
+            $response['success'] = true;
+            break;
+            
+        case 'toggle_status':
+            $id_utilisateur = intval($_POST['id_utilisateur'] ?? 0);
+            $nouveau_statut = intval($_POST['est_actif'] ?? 1);
+            
+            if (!$id_utilisateur) {
+                throw new Exception('ID utilisateur manquant');
+            }
+            
+            if ($id_utilisateur == $user_id && $nouveau_statut == 0) {
+                throw new Exception('Vous ne pouvez pas désactiver votre propre compte');
+            }
+            
+            db_execute("UPDATE utilisateurs SET est_actif = ? WHERE id_utilisateur = ?", [$nouveau_statut, $id_utilisateur]);
+            
+            $response['success'] = true;
+            $response['message'] = $nouveau_statut ? 'Utilisateur activé' : 'Utilisateur désactivé';
+            break;
+            
+        default:
+            throw new Exception('Action non reconnue');
+    }
+    
+} catch (Exception $e) {
+    $response['message'] = $e->getMessage();
+}
+
+echo json_encode($response);
+?>

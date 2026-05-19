@@ -1,0 +1,500 @@
+/**
+ * ============================================================================
+ * STORE SUITE - STYLES PERSONNALISÉS
+ * ============================================================================
+ * 
+ * Fichier CSS principal pour Store Suite
+ * Les couleurs primaire et secondaire sont chargées dynamiquement depuis la BD
+ * 
+ * ============================================================================
+ */
+
+/* Variables CSS - Seront remplacées dynamiquement par PHP */
+:root {
+    --couleur-primaire: #206bc4;
+    --couleur-secondaire: #1a7f5a;
+}
+
+/* ============================================================================
+   GLOBAL
+   ============================================================================ */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ============================================================================
+   NAVBAR & HEADER
+   ============================================================================ */
+.navbar-brand-logo {
+    max-height: 40px;
+    max-width: 180px;
+    object-fit: contain;
+}
+
+.navbar-brand-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--couleur-primaire);
+    text-decoration: none;
+}
+
+.navbar-brand-text:hover {
+    color: var(--couleur-secondaire);
+}
+
+.dropdown-item-heading {
+    font-weight: 600;
+    color: var(--couleur-primaire);
+    padding: 0.5rem 1rem;
+    background: rgba(32, 107, 196, 0.05);
+    cursor: default;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dropdown-item-heading:hover {
+    background: rgba(32, 107, 196, 0.05);
+    color: var(--couleur-primaire);
+}
+
+.nav-link.active {
+    color: var(--couleur-primaire) !important;
+    font-weight: 600;
+    position: relative;
+}
+
+.navbar-expand-md .navbar-nav .nav-link.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.5rem;
+    border-bottom: 2px solid var(--couleur-primaire);
+}
+
+/* ============================================================================
+   BOUTONS
+   ============================================================================ */
+.btn-primary, .badge-primary {
+    background-color: var(--couleur-primaire) !important;
+    border-color: var(--couleur-primaire) !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--couleur-secondaire) !important;
+    border-color: var(--couleur-secondaire) !important;
+    color: #ffffff !important;
+}
+
+/* ============================================================================
+   NOTIFICATIONS
+   ============================================================================ */
+.notification-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 7px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* ============================================================================
+   AVATAR
+   ============================================================================ */
+.avatar {
+    background-color: var(--couleur-primaire) !important;
+}
+
+/* ============================================================================
+   PAGE WRAPPER
+   ============================================================================ */
+.page-wrapper {
+    min-height: calc(100vh - 3.5rem);
+}
+
+/* ============================================================================
+   ALERTES DE STOCK
+   ============================================================================ */
+.badge-rupture {
+    background-color: #dc3545 !important;
+}
+
+.badge-critique {
+    background-color: #fd7e14 !important;
+}
+
+.badge-faible {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+/* ============================================================================
+   SETUP PAGE
+   ============================================================================ */
+.setup-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.setup-header {
+    text-align: center;
+    margin-bottom: 60px;
+    padding: 40px 0;
+    border-bottom: 3px solid #e5e7eb;
+}
+
+.setup-header h1 {
+    color: #1f2937;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+
+.setup-header p {
+    color: #6b7280;
+    font-size: 1.05rem;
+    margin-bottom: 0;
+}
+
+.step-indicator {
+    text-align: center;
+    margin-bottom: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+}
+
+.step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #e5e7eb;
+    color: #9ca3af;
+    font-weight: 700;
+    font-size: 1.2rem;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.step:not(:last-child) {
+    margin-right: 70px;
+}
+
+.step:not(:last-child):after {
+    content: '';
+    position: absolute;
+    width: 70px;
+    height: 3px;
+    background: #e5e7eb;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.step.active {
+    background: var(--couleur-primaire);
+    border-color: var(--couleur-primaire);
+    color: white;
+    box-shadow: 0 5px 15px rgba(32, 107, 196, 0.4);
+    transform: scale(1.08);
+}
+
+.step.completed {
+    background: #2fb344;
+    border-color: #2fb344;
+    color: white;
+}
+
+.step.completed:after {
+    background: #2fb344;
+}
+
+.logo-preview {
+    max-width: 200px;
+    max-height: 200px;
+    margin-top: 10px;
+    border: 3px dashed var(--couleur-primaire);
+    padding: 15px;
+    display: none;
+    border-radius: 10px;
+    background: #f8f9fa;
+}
+
+.color-preview {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
+    transition: transform 0.2s;
+}
+
+.color-preview:hover {
+    transform: scale(1.1);
+}
+
+/* ============================================================================
+   FORMULAIRES
+   ============================================================================ */
+.form-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 10px;
+    font-size: 0.92rem;
+}
+
+.form-label.required:after {
+    content: ' *';
+    color: #dc3545;
+    font-weight: 700;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--couleur-primaire);
+    box-shadow: 0 0 0 4px rgba(32, 107, 196, 0.1);
+}
+
+.mb-3 {
+    margin-bottom: 1.5rem !important;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--couleur-primaire);
+    box-shadow: 0 0 0 4px rgba(32, 107, 196, 0.1);
+}
+
+.form-hint {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #6b7280;
+    font-size: 0.75rem;
+    margin-left: 8px;
+    cursor: help;
+    transition: all 0.2s ease;
+}
+
+.info-icon:hover {
+    background: var(--couleur-primaire);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* ============================================================================
+   CARDS
+   ============================================================================ */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+}
+
+.card-body {
+    padding: 2.5rem;
+}
+
+.card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+}
+
+/* ============================================================================
+   BOUTONS - STYLES AVANCÉS
+   ============================================================================ */
+.btn-primary {
+    background: var(--couleur-primaire);
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: var(--couleur-secondaire);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(32, 107, 196, 0.3);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(108, 117, 125, 0.3);
+}
+
+.btn-success {
+    background: #2fb344;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    background: #28a03c;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(47, 179, 68, 0.3);
+}
+
+.btn-success {
+    background: #2fb344;
+    border: none;
+    padding: 11px 28px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: #ffffff;
+    transition: all 0.3s;
+}
+
+.btn-success:hover {
+    background: #28a03c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(47, 179, 68, 0.3);
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+@media (max-width: 768px) {
+    .navbar-brand-logo {
+        max-width: 120px;
+        max-height: 32px;
+    }
+    
+    .navbar-brand-text {
+        font-size: 1.2rem;
+    }
+    
+    .step:not(:last-child) {
+        margin-right: 40px;
+    }
+    
+    .step:not(:last-child):after {
+        width: 40px;
+    }
+}
+
+/* ============================================================================
+   TABLEAUX
+   ============================================================================ */
+.table-vcenter td,
+.table-vcenter th {
+    vertical-align: middle;
+}
+
+/* ============================================================================
+   UTILITIES
+   ============================================================================ */
+.text-primary {
+    color: var(--couleur-primaire) !important;
+}
+
+.bg-primary {
+    background-color: var(--couleur-primaire) !important;
+}
+
+.border-primary {
+    border-color: var(--couleur-primaire) !important;
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+.footer {
+    background: #fff;
+    padding: 1rem 0;
+    margin-top: 3rem;
+}
+
+.footer.border-top {
+    border-top: 2px solid #e9ecef !important;
+}
+
+.footer .link-secondary {
+    transition: all 0.2s ease;
+}
+
+.footer .link-secondary:hover {
+    color: var(--couleur-primaire) !important;
+    text-decoration: none;
+}
+
+.footer .link-primary {
+    color: var(--couleur-primaire) !important;
+}
+
+.footer .link-primary:hover {
+    color: var(--couleur-secondaire) !important;
+}
+
+.footer .icon-sm {
+    vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+    .footer .col-md-4 {
+        text-align: center !important;
+        margin-bottom: 1rem;
+    }
+    
+    .footer .col-md-4:last-child {
+        margin-bottom: 0;
+    }
+}
