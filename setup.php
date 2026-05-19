@@ -4,6 +4,8 @@
  * Cette page s'affiche uniquement si le système n'est pas encore configuré
  */
 
+session_start();
+
 // Charger la configuration de base (sans protection de page)
 require_once 'config/config.php';
 require_once 'config/database.php';
@@ -146,6 +148,18 @@ if (is_system_configured()) {
                     <span class="step" id="step2">2</span>
                     <span class="step" id="step3">3</span>
                 </div>
+
+                <?php if (!empty($_SESSION['setup_errors'])): ?>
+                <div class="alert alert-danger mb-3">
+                    <strong>Erreur lors de la configuration :</strong>
+                    <ul class="mb-0 mt-1">
+                        <?php foreach ($_SESSION['setup_errors'] as $err): ?>
+                            <li><?php echo htmlspecialchars($err); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+                <?php unset($_SESSION['setup_errors']); ?>
+                <?php endif; ?>
 
                 <div class="card">
                     <div class="card-body">
