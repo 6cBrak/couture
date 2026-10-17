@@ -44,6 +44,9 @@ while true; do
     echo -e "  ${RED}Le domaine est obligatoire.${NC}"
 done
 
+read -rp "$(echo -e "  ${CYAN}Nom de l'instance${NC} (unique par client) [couture] : ")" INSTANCE
+INSTANCE=${INSTANCE:-couture}
+
 echo ""
 echo -e "${BOLD}Base de données${NC}"
 echo -e "${YELLOW}─────────────────────────────────────────────${NC}\n"
@@ -95,6 +98,7 @@ echo -e "${CYAN}▶ Création du fichier .env...${NC}"
 
 cat > .env <<EOF
 APP_DOMAIN=${APP_DOMAIN}
+INSTANCE=${INSTANCE}
 
 DB_NAME=${DB_NAME}
 DB_USER=${DB_USER}

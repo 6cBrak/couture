@@ -2,7 +2,7 @@ services:
 
   app:
     build: .
-    container_name: couture_app
+    container_name: ${INSTANCE:-couture}_app
     restart: unless-stopped
     environment:
       DB_HOST: db
@@ -20,14 +20,15 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
-      - "traefik.http.routers.couture.rule=Host(`${APP_DOMAIN}`)"
-      - "traefik.http.routers.couture.entrypoints=websecure"
-      - "traefik.http.routers.couture.tls.certresolver=letsencrypt"
-      - "traefik.http.services.couture.loadbalancer.server.port=80"
+      - "traefik.http.routers.${INSTANCE:-couture}.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.${INSTANCE:-couture}.entrypoints=websecure"
+      - "traefik.http.routers.${INSTANCE:-couture}.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.${INSTANCE:-couture}.service=${INSTANCE:-couture}"
+      - "traefik.http.services.${INSTANCE:-couture}.loadbalancer.server.port=80"
 
   db:
     image: mariadb:10.11
-    container_name: couture_db
+    container_name: ${INSTANCE:-couture}_db
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
