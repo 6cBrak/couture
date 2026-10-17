@@ -39,7 +39,7 @@ $couleur_secondaire = '#0284c7'; // Bleu profond
 
 // Récupérer les paramètres de la boutique depuis la base de données
 try {
-    $config = db_fetch_one("SELECT nom_boutique, logo, couleur_primaire, couleur_secondaire FROM parametres WHERE id = 1");
+    $config = db_fetch_one("SELECT nom_boutique, logo, couleur_primaire, couleur_secondaire FROM configuration WHERE id_config = 1");
     if ($config) {
         $nom_boutique = $config['nom_boutique'] ?? 'STORESUITE';
         $logo_boutique = $config['logo'] ?? '';
