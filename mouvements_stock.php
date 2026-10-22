@@ -910,7 +910,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Charger Chart.js et initialiser les graphiques
     if (typeof Chart === 'undefined') {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+        script.src = '<?php echo BASE_URL; ?>assets/js/chart.4.4.0.umd.js';
         script.onload = initCharts;
         document.head.appendChild(script);
     } else {

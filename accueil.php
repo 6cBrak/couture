@@ -1087,7 +1087,7 @@ include 'header.php';
 </div>
 
 <!-- Charger Chart.js depuis CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="<?php echo BASE_URL; ?>assets/js/chart.4.4.1.umd.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

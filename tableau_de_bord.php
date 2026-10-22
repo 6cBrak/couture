@@ -319,7 +319,7 @@ include 'header.php';
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="<?php echo BASE_URL; ?>assets/js/chart.4.4.0.umd.js"></script>
 <script>
 const evolutionData = <?php echo json_encode($evolution); ?>;
 const ctx = document.getElementById('evolutionChart').getContext('2d');
