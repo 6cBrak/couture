@@ -194,8 +194,22 @@ try {
             if ($id_depot === 'all') {
                 // Vue globale tous dépôts
                 $inventaire = db_fetch_all("
-                    SELECT * FROM vue_inventaire_complet
-                    ORDER BY nom_produit ASC
+                    SELECT
+                        p.nom_produit,
+                        c.nom_categorie,
+                        p.seuil_alerte,
+                        p.seuil_critique,
+                        COALESCE(SUM(CASE WHEN d.id_depot IS NOT NULL THEN spd.quantite END), 0) AS quantite_totale,
+                        COALESCE(SUM(CASE WHEN d.type_depot = 'magasin' THEN spd.quantite END), 0) AS magasin_principal,
+                        COALESCE(SUM(CASE WHEN d.type_depot <> 'magasin' THEN spd.quantite END), 0) AS autres_depots,
+                        COUNT(d.id_depot) AS nombre_depots
+                    FROM produits p
+                    LEFT JOIN categories c ON p.id_categorie = c.id_categorie
+                    LEFT JOIN stock_par_depot spd ON p.id_produit = spd.id_produit
+                    LEFT JOIN depots d ON spd.id_depot = d.id_depot AND d.est_actif = 1
+                    WHERE p.est_actif = 1
+                    GROUP BY p.id_produit, p.nom_produit, c.nom_categorie, p.seuil_alerte, p.seuil_critique
+                    ORDER BY p.nom_produit ASC
                     LIMIT 200
                 ");
                 

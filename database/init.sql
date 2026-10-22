@@ -931,132 +931,141 @@ LOCK TABLES `ventes_details` WRITE;
 /*!40000 ALTER TABLE `ventes_details` ENABLE KEYS */;
 UNLOCK TABLES;
 
---
--- Table structure for table `vue_mouvements_stock_detail`
---
-
-DROP TABLE IF EXISTS `vue_mouvements_stock_detail`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `vue_mouvements_stock_detail` (
-  `code_produit` varchar(100) DEFAULT NULL,
-  `cout_total` decimal(15,2) DEFAULT NULL,
-  `cout_unitaire` decimal(15,2) DEFAULT NULL,
-  `date_mouvement` datetime DEFAULT NULL,
-  `depot_destination` varchar(255) DEFAULT NULL,
-  `depot_source` varchar(255) DEFAULT NULL,
-  `id_mouvement` int(11) DEFAULT NULL,
-  `id_produit` int(11) DEFAULT NULL,
-  `motif` varchar(255) DEFAULT NULL,
-  `nom_fournisseur` varchar(255) DEFAULT NULL,
-  `nom_produit` varchar(255) DEFAULT NULL,
-  `notes` text DEFAULT NULL,
-  `numero_facture` varchar(50) DEFAULT NULL,
-  `quantite` int(11) DEFAULT NULL,
-  `quantite_apres` int(11) DEFAULT NULL,
-  `quantite_avant` int(11) DEFAULT NULL,
-  `type_mouvement` enum('entree','sortie','ajustement','retour','transfert','inventaire','perte') DEFAULT NULL,
-  `type_mouvement_libelle` varchar(14) DEFAULT NULL,
-  `unite_mesure` varchar(50) DEFAULT NULL,
-  `utilisateur` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `vue_mouvements_stock_detail`
+-- Vues (stock et statistiques)
 --
+-- SQL SECURITY INVOKER : pas de dépendance à un compte DEFINER particulier.
 
-LOCK TABLES `vue_mouvements_stock_detail` WRITE;
-/*!40000 ALTER TABLE `vue_mouvements_stock_detail` DISABLE KEYS */;
-/*!40000 ALTER TABLE `vue_mouvements_stock_detail` ENABLE KEYS */;
-UNLOCK TABLES;
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW `vue_produits_alertes` AS
+SELECT
+    p.id_produit,
+    p.nom_produit,
+    p.code_produit,
+    c.nom_categorie,
+    p.quantite_stock,
+    p.seuil_alerte,
+    p.seuil_critique,
+    CASE
+        WHEN p.quantite_stock = 0 THEN 'rupture'
+        WHEN p.quantite_stock <= p.seuil_critique THEN 'critique'
+        WHEN p.quantite_stock <= p.seuil_alerte THEN 'faible'
+        ELSE 'normal'
+    END AS niveau_alerte,
+    p.date_entree
+FROM produits p
+LEFT JOIN categories c ON p.id_categorie = c.id_categorie
+WHERE p.est_actif = 1 AND p.quantite_stock <= p.seuil_alerte;
 
---
--- Table structure for table `vue_produits_alertes`
---
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW `vue_statistiques_ventes` AS
+SELECT
+    CAST(v.date_vente AS DATE) AS date_vente,
+    COUNT(v.id_vente) AS nombre_ventes,
+    SUM(v.montant_total) AS chiffre_affaires,
+    SUM(vd.benefice_ligne) AS benefice_total,
+    u.nom_complet AS vendeur
+FROM ventes v
+LEFT JOIN ventes_details vd ON v.id_vente = vd.id_vente
+LEFT JOIN utilisateurs u ON v.id_vendeur = u.id_utilisateur
+WHERE v.statut = 'validee'
+GROUP BY CAST(v.date_vente AS DATE), u.id_utilisateur;
 
-DROP TABLE IF EXISTS `vue_produits_alertes`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `vue_produits_alertes` (
-  `code_produit` varchar(100) DEFAULT NULL,
-  `date_entree` date DEFAULT NULL,
-  `id_produit` int(11) DEFAULT NULL,
-  `niveau_alerte` varchar(8) DEFAULT NULL,
-  `nom_categorie` varchar(255) DEFAULT NULL,
-  `nom_produit` varchar(255) DEFAULT NULL,
-  `quantite_stock` int(11) DEFAULT NULL,
-  `seuil_alerte` int(11) DEFAULT NULL,
-  `seuil_critique` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW `vue_stock_global` AS
+SELECT 
+    p.id_produit,
+    p.code_produit,
+    p.nom_produit,
+    p.id_categorie,
+    c.nom_categorie,
+    p.prix_achat,
+    p.prix_vente,
+    COALESCE(SUM(spd.quantite), 0) AS stock_total,
+    p.seuil_alerte,
+    p.seuil_critique,
+    p.unite_mesure,
+    p.est_actif,
+    CASE 
+        WHEN COALESCE(SUM(spd.quantite), 0) = 0 THEN 'rupture'
+        WHEN COALESCE(SUM(spd.quantite), 0) <= p.seuil_critique THEN 'critique'
+        WHEN COALESCE(SUM(spd.quantite), 0) <= p.seuil_alerte THEN 'alerte'
+        ELSE 'normal'
+    END AS statut_stock
+FROM produits p
+LEFT JOIN categories c ON p.id_categorie = c.id_categorie
+LEFT JOIN stock_par_depot spd ON p.id_produit = spd.id_produit
+WHERE p.est_actif = 1
+GROUP BY p.id_produit, p.code_produit, p.nom_produit, p.id_categorie, 
+         c.nom_categorie, p.prix_achat, p.prix_vente, p.seuil_alerte, 
+         p.seuil_critique, p.unite_mesure, p.est_actif;
 
---
--- Dumping data for table `vue_produits_alertes`
---
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW `vue_inventaire_complet` AS
+SELECT 
+    p.id_produit,
+    p.code_produit,
+    p.nom_produit,
+    c.nom_categorie,
+    d.id_depot,
+    d.nom_depot,
+    d.type_depot,
+    spd.quantite,
+    p.prix_achat,
+    p.prix_vente,
+    (spd.quantite * p.prix_achat) AS valeur_stock_achat,
+    (spd.quantite * p.prix_vente) AS valeur_stock_vente,
+    p.unite_mesure,
+    spd.seuil_alerte,
+    CASE 
+        WHEN spd.quantite = 0 THEN 'rupture'
+        WHEN spd.quantite <= spd.seuil_alerte THEN 'alerte'
+        ELSE 'normal'
+    END AS statut_depot
+FROM produits p
+INNER JOIN stock_par_depot spd ON p.id_produit = spd.id_produit
+INNER JOIN depots d ON spd.id_depot = d.id_depot
+LEFT JOIN categories c ON p.id_categorie = c.id_categorie
+WHERE p.est_actif = 1 AND d.est_actif = 1
+ORDER BY p.nom_produit, d.ordre_affichage, d.nom_depot;
 
-LOCK TABLES `vue_produits_alertes` WRITE;
-/*!40000 ALTER TABLE `vue_produits_alertes` DISABLE KEYS */;
-/*!40000 ALTER TABLE `vue_produits_alertes` ENABLE KEYS */;
-UNLOCK TABLES;
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW `vue_mouvements_stock_detail` AS
+SELECT 
+    m.id_mouvement,
+    m.type_mouvement,
+    m.date_mouvement,
+    p.id_produit,
+    p.code_produit,
+    p.nom_produit,
+    p.unite_mesure,
+    m.quantite,
+    m.quantite_avant,
+    m.quantite_apres,
+    ds.nom_depot AS depot_source,
+    dd.nom_depot AS depot_destination,
+    f.nom_fournisseur,
+    m.cout_unitaire,
+    m.cout_total,
+    m.motif,
+    m.notes,
+    u.nom_complet AS utilisateur,
+    v.numero_facture,
+    CASE m.type_mouvement
+        WHEN 'entree' THEN 'Entrée stock'
+        WHEN 'sortie' THEN 'Sortie (Vente)'
+        WHEN 'transfert' THEN 'Transfert'
+        WHEN 'ajustement' THEN 'Ajustement'
+        WHEN 'inventaire' THEN 'Inventaire'
+        WHEN 'perte' THEN 'Perte/Casse'
+        WHEN 'retour' THEN 'Retour'
+        ELSE 'Autre'
+    END AS type_mouvement_libelle
+FROM mouvements_stock m
+INNER JOIN produits p ON m.id_produit = p.id_produit
+LEFT JOIN depots ds ON m.id_depot_source = ds.id_depot
+LEFT JOIN depots dd ON m.id_depot_destination = dd.id_depot
+LEFT JOIN fournisseurs f ON m.id_fournisseur = f.id_fournisseur
+LEFT JOIN utilisateurs u ON m.id_utilisateur = u.id_utilisateur
+LEFT JOIN ventes v ON m.id_vente = v.id_vente
+ORDER BY m.date_mouvement DESC, m.id_mouvement DESC;
 
---
--- Table structure for table `vue_statistiques_ventes`
---
-
-DROP TABLE IF EXISTS `vue_statistiques_ventes`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `vue_statistiques_ventes` (
-  `benefice_total` decimal(37,2) DEFAULT NULL,
-  `chiffre_affaires` decimal(37,2) DEFAULT NULL,
-  `date_vente` date DEFAULT NULL,
-  `nombre_ventes` bigint(20) DEFAULT NULL,
-  `vendeur` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `vue_statistiques_ventes`
---
-
-LOCK TABLES `vue_statistiques_ventes` WRITE;
-/*!40000 ALTER TABLE `vue_statistiques_ventes` DISABLE KEYS */;
-/*!40000 ALTER TABLE `vue_statistiques_ventes` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `vue_stock_global`
---
-
-DROP TABLE IF EXISTS `vue_stock_global`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `vue_stock_global` (
-  `code_produit` varchar(100) DEFAULT NULL,
-  `est_actif` tinyint(1) DEFAULT NULL,
-  `id_categorie` int(11) DEFAULT NULL,
-  `id_produit` int(11) DEFAULT NULL,
-  `nom_categorie` varchar(255) DEFAULT NULL,
-  `nom_produit` varchar(255) DEFAULT NULL,
-  `prix_achat` decimal(15,2) DEFAULT NULL,
-  `prix_vente` decimal(15,2) DEFAULT NULL,
-  `seuil_alerte` int(11) DEFAULT NULL,
-  `seuil_critique` int(11) DEFAULT NULL,
-  `statut_stock` varchar(8) DEFAULT NULL,
-  `stock_total` decimal(32,0) DEFAULT NULL,
-  `unite_mesure` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `vue_stock_global`
---
-
-LOCK TABLES `vue_stock_global` WRITE;
-/*!40000 ALTER TABLE `vue_stock_global` DISABLE KEYS */;
-/*!40000 ALTER TABLE `vue_stock_global` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
